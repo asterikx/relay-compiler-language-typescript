@@ -9,11 +9,8 @@ function getModuleName(path: string) {
   return moduleName;
 }
 
-// collects all require calls and converts them static (top-level) or dynamic imports
-const requireToImport = (
-  content: string,
-  enableDynamicImports: boolean = false
-): string => {
+// collects all require calls and converts them top-level imports
+const requireToImport = (content: string): string => {
   const requireRegex = createRequireRegex();
 
   // collect all require paths (unique)
@@ -27,49 +24,39 @@ const requireToImport = (
   }
   // replace all require paths
   Array.from(requirePaths).forEach((requirePath) => {
-    // dynamic or static (top-level) import
-    const replacement = enableDynamicImports
-      ? `await import('${requirePath.replace(".ts", "")}')`
-      : getModuleName(requirePath);
-    content = content.replace(`require('${requirePath}')`, replacement);
+    content = content.replace(
+      `require('${requirePath}')`,
+      getModuleName(requirePath)
+    );
   });
+  // create top-level imports
+  const topLevelImports = Array.from(requirePaths)
+    .sort()
+    .map(
+      (requirePath) =>
+        `import { ${getModuleName(requirePath)} } from "${requirePath.replace(
+          ".ts",
+          ""
+        )}";`
+    );
   // add top-level imports
-  if (!enableDynamicImports) {
-    const topLevelImports = Array.from(requirePaths)
-      .sort()
-      .map(
-        (requirePath) =>
-          `import { ${getModuleName(requirePath)} } from "${requirePath.replace(
-            ".ts",
-            ""
-          )}";`
-      );
-    return `${topLevelImports.join("\n")}
+  content = `${topLevelImports.join("\n")}
 ${content}`;
-  }
   return content;
 };
 
 type FormatContentOptions = {
-  // common options
-} & (
-  | {
-      enableImportSyntax?: false;
-    }
-  | {
-      enableImportSyntax: true;
-      enableDynamicImportSyntax?: boolean;
-    }
-);
+  replaceRequire: boolean;
+};
 
 function formatContent(
   rawContent: string,
   options: FormatContentOptions
 ): string {
-  if (!options.enableImportSyntax) {
+  if (!options.replaceRequire) {
     return rawContent;
   }
-  return requireToImport(rawContent, options.enableDynamicImportSyntax);
+  return requireToImport(rawContent);
 }
 
 export const formatterFactory = (
@@ -109,8 +96,7 @@ export default node;
 ${hash ? `/* ${hash} */\n` : ""}
 ${documentTypeImport}
 ${formatContent(rawContent, {
-  enableImportSyntax: module >= ts.ModuleKind.ES2015,
-  enableDynamicImportSyntax: module >= ts.ModuleKind.ES2020, // ES2020 and above support dynamic imports (https://www.typescriptlang.org/tsconfig#module)
+  replaceRequire: module >= ts.ModuleKind.ES2015,
 })}`;
   return content;
 };
