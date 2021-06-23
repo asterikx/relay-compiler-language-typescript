@@ -110,7 +110,7 @@ ${hash ? `/* ${hash} */\n` : ""}
 ${documentTypeImport}
 ${formatContent(rawContent, {
   enableImportSyntax: module >= ts.ModuleKind.ES2015,
-  enableDynamicImportSyntax: module >= ts.ModuleKind.ES2020,
+  enableDynamicImportSyntax: module >= ts.ModuleKind.ES2020, // ES2020 and above support dynamic imports (https://www.typescriptlang.org/tsconfig#module)
 })}`;
   return content;
 };
