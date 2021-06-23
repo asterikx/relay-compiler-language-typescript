@@ -161,7 +161,7 @@ describe("formatGeneratedModule", () => {
       // @ts-nocheck
 
       import { ReaderFragment } from \\"relay-runtime\\";
-      import { RefetchableFragmentQuery } from \\"./RefetchableFragmentQuery.graphql\\";
+      import RefetchableFragmentQuery from \\"./RefetchableFragmentQuery.graphql\\";
       export type CompleteExample = { readonly id: string }
 
 

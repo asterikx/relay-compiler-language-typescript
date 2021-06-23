@@ -34,7 +34,7 @@ const requireToImport = (content: string): string => {
     .sort()
     .map(
       (requirePath) =>
-        `import { ${getModuleName(requirePath)} } from "${requirePath.replace(
+        `import ${getModuleName(requirePath)} from "${requirePath.replace(
           ".ts",
           ""
         )}";`
