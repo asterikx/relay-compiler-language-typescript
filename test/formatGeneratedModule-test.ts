@@ -1,3 +1,4 @@
+import * as ts from "typescript";
 import { formatterFactory } from "../src/formatGeneratedModule";
 import * as ts from "typescript";
 
